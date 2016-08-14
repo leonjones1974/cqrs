@@ -1,0 +1,29 @@
+package com.cam.cqrs
+
+import scala.reflect.ClassTag
+
+trait Actor[A, B] {
+  def ch(cmd: A)(implicit bus: EventBus): List[Event[_]]
+
+  val eh: Event[_] => Actor[A, B]
+}
+
+case class ActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit bus: EventBus, tag: ClassTag[A]) {
+  bus :+ new CommandHandler[A] {
+    override def handle = actor.ch
+  }
+
+  bus :+ new EventHandler[Actor[A, B]] {
+    override def onEvent = ev => {
+      actor = actor.eh(ev)
+      actor
+    }
+  }
+}
+
+object Actor {
+  def apply[A <: Command[_], B](actor: Actor[A, B])(implicit bus: EventBus, tag: ClassTag[A]): ActorHolder[A, B] = {
+    ActorHolder(actor)
+  }
+}
+
