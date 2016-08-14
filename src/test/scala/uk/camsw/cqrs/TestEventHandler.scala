@@ -1,6 +1,4 @@
-package com.cam.cqrs.test
-
-import com.cam.cqrs.{Event, EventHandler}
+package uk.camsw.cqrs
 
 class StringEventHandler extends EventHandler[StringEventHandler] {
   var received = List.empty[String]

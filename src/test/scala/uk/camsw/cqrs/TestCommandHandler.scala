@@ -1,6 +1,4 @@
-package com.cam.cqrs.test
-
-import com.cam.cqrs.{Command, CommandHandler, Event}
+package uk.camsw.cqrs
 
 case class TestCommandHandler[A <: Command[_]](events: List[Event[_]] = List.empty) extends CommandHandler[A] {
   var received = List.empty[Any]

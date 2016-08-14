@@ -1,6 +1,5 @@
-package com.cam.cqrs
+package uk.camsw.cqrs
 
-import com.cam.cqrs.test.{IntEventHandler, StringEventHandler, TestCommandHandler}
 import org.scalatest.{FunSpec, Matchers}
 
 class EventBusTest extends FunSpec with Matchers {

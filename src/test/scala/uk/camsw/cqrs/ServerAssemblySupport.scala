@@ -1,12 +1,9 @@
-package com.cam.cqrs.test
+package uk.camsw.cqrs
 
-import com.cam.cqrs._
+import org.scalatest.{BeforeAndAfter, Suite}
 
 import scala.reflect._
 
-/**
-  * Created by leonjones on 14/08/16.
-  */
 trait ServerAssemblySupport extends BeforeAndAfter {
   self: Suite =>
 
@@ -14,11 +11,13 @@ trait ServerAssemblySupport extends BeforeAndAfter {
   var collector: TestActorHolder[NullCommand, NullActor] = _
 
   before {
-    server = ServerAssembly()
+    server = serverAssembly()
     collector = TestActorHolder(NullActor())(server.bus, classTag[NullCommand])
   }
 
   def raisedEvents = collector.raisedEvents
+
+  def serverAssembly(): ServerAssembly
 }
 
 case class NullCommand() extends Command[String] {

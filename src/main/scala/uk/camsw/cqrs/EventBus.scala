@@ -1,4 +1,4 @@
-package com.cam.cqrs
+package uk.camsw.cqrs
 
 import scala.reflect.ClassTag
 import scalaz.Scalaz._
