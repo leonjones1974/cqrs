@@ -1,6 +1,7 @@
 name := "cqrs"
 version := "1.0-SNAPSHOT"
 scalaVersion := "2.11.8"
+organization := "uk.camsw"
 
 
 libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.4"
