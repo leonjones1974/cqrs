@@ -19,6 +19,8 @@ publishTo := {
     Some("releases" at nexus + "service/local/staging/deploy/maven2")
 }
 
+credentials += Credentials(Path.userHome / ".sonatype" / ".credentials")
+
 publishMavenStyle := true
 publishArtifact in Test := true
 
