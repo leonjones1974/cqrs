@@ -66,6 +66,7 @@ case class EventBus(var commandHandlers: Map[ClassTag[_], List[CommandHandler[_]
         case _ => EventBus.this
       }
     }
+    this << c
     p.future
   }
 

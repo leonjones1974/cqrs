@@ -1,25 +1,25 @@
 package uk.camsw.cqrs
 
 import java.util.UUID
+import java.util.concurrent.Executors
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FunSpec, Matchers}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 
-class EventBusTest extends FunSpec with Matchers {
+class EventBusTest extends FunSpec with BeforeAndAfter with Matchers  {
 
   import EventBusTest._
-  import scala.concurrent.ExecutionContext.Implicits.global
 
-  describe("Event Bus") {
-
-    sut :+ ch1
-    sut :+ ch2
-    sut :+ eh1
-    sut :+ eh2
-    sut << stringCommand
-    sut << intCommand
+  describe("Event Bus - Pub/ Sub") {
+    val eventBus = EventBus()
+    eventBus :+ ch1
+    eventBus :+ ch2
+    eventBus :+ eh1
+    eventBus :+ eh2
+    eventBus << stringCommand
+    eventBus << intCommand
 
     it("should dispatch a command to registered handler") {
       ch1.received should contain only stringCommand.data
@@ -36,32 +36,28 @@ class EventBusTest extends FunSpec with Matchers {
   }
 
   describe("Event Bus -> Request/ Response") {
-    it ("ask should correlated first event based on command id") {
-      val f = sut ? intCommand
-      sut << TestEvent(ev1a, UUID.randomUUID())
-      sut << TestEvent(ev1b, intCommand.id)
-
-      f.onSuccess { case e => e.data shouldBe ev1b}
-      Await.result(f, 5 seconds)
-      f.onFailure{case t => fail(s"Future failed: $t")}
+    it("ask should correlated first event based on command id") {
+      val eventBus = EventBus()
+      eventBus :+ TestCommandHandler[IntCommand](List(
+        TestEvent(ev1a, UUID.randomUUID()),
+        TestEvent(ev1b, intCommand.id))
+      )
+      Await.result(eventBus ? intCommand, 1 second).data shouldBe ev1b
     }
-  }
 
-  describe("Event Bus -> Request/ Response") {
-    it ("ask should drop subsequent matching commands") {
-      val f = sut ? intCommand
-      sut << TestEvent(ev1a, intCommand.id)
-      sut << TestEvent(ev1b, intCommand.id)
-
-      f.onSuccess { case e => e.data shouldBe ev1a}
-      Await.result(f, 5 seconds)
-      f.onFailure{case t => fail(s"Future failed: $t")}
+    it("ask should drop subsequent matching commands") {
+      val eventBus = EventBus()
+      eventBus :+ TestCommandHandler[IntCommand](List(
+        TestEvent(ev1a, intCommand.id),
+        TestEvent(ev1b, intCommand.id))
+      )
+      Await.result(eventBus ? intCommand, 1 second).data shouldBe ev1a
     }
   }
 }
 
 object EventBusTest extends DataTestSupport {
-  val sut = EventBus()
+  implicit val context = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
 
   val stringCommand = StringCommand(aString())
 
