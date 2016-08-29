@@ -44,7 +44,7 @@ case class EventBus(var commandHandlers: Map[ClassTag[_], List[CommandHandler[_]
   def :+[A](e: EventHandler[A]): Subscription = {
     eventHandlers = e :: eventHandlers
     () => {
-      eventHandlers = eventHandlers.filterNot(_ != e)
+      eventHandlers = eventHandlers.filterNot(_ == e)
     }
   }
 
