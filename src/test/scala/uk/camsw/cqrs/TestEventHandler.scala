@@ -1,5 +1,7 @@
 package uk.camsw.cqrs
 
+import java.util.UUID
+
 class StringEventHandler extends EventHandler[StringEventHandler] {
   var received = List.empty[String]
 
@@ -21,4 +23,6 @@ class IntEventHandler extends EventHandler[IntEventHandler] {
     case s => this
   }
 }
+
+case class TestEvent[A](data: A, override val id: UUID = UUID.randomUUID()) extends Event[A]
 

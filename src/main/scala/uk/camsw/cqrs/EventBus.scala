@@ -1,10 +1,14 @@
 package uk.camsw.cqrs
 
+import java.util.UUID
+
+import scala.concurrent.{Future, Promise}
 import scala.reflect.ClassTag
 import scalaz.Scalaz._
 
-trait Command[A] {
-  val data: A
+abstract class Command[A](val _id: UUID = UUID.randomUUID()) {
+  def id: UUID = _id
+  def data: A
 }
 
 object Command {
@@ -13,13 +17,15 @@ object Command {
   }
 }
 
-trait Event[A] {
-  val data: A
+abstract class Event[A](val _id: UUID = UUID.randomUUID()) {
+  def id: UUID = _id
+  def data: A
 }
 
 object Event {
   implicit def asEvent[A]: A => Event[A] = e => new Event[A] {
     val data = e
+    override val id: UUID = UUID.randomUUID()
   }
 }
 
@@ -46,6 +52,21 @@ case class EventBus(var commandHandlers: Map[ClassTag[_], List[CommandHandler[_]
     () => {
       eventHandlers = eventHandlers.filterNot(_ == e)
     }
+  }
+
+  def ?[A <: Command[_]](c: A)(implicit tag: ClassTag[A]): Future[Event[_]] = {
+    val p = Promise[Event[_]]
+    var unsubscribe: Subscription = null
+    unsubscribe = this :+ new EventHandler[EventBus] {
+      override def onEvent: (Event[_]) => EventBus = {
+        case e if e.id == c.id =>
+          unsubscribe()
+          p.success(e)
+          EventBus.this
+        case _ => EventBus.this
+      }
+    }
+    p.future
   }
 
   def <<[A <: Command[_]](c: A)(implicit tag: ClassTag[A]): List[Event[_]] = {
