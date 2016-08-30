@@ -2,7 +2,7 @@ package uk.camsw.cqrs
 
 import java.util.UUID
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.reflect.ClassTag
 import scalaz.Scalaz._
 
@@ -54,7 +54,7 @@ case class EventBus(var commandHandlers: Map[ClassTag[_], List[CommandHandler[_]
     }
   }
 
-  def ?[A <: Command[_]](c: A)(implicit tag: ClassTag[A]): Future[Event[_]] = {
+  def ?[A <: Command[_]](c: A)(implicit tag: ClassTag[A], ec: ExecutionContext): Future[Event[_]] = {
     val p = Promise[Event[_]]
     var unsubscribe: Subscription = null
     unsubscribe = this :+ new EventHandler[EventBus] {
@@ -66,7 +66,7 @@ case class EventBus(var commandHandlers: Map[ClassTag[_], List[CommandHandler[_]
         case _ => EventBus.this
       }
     }
-    this << c
+    Future{this << c}
     p.future
   }
 
