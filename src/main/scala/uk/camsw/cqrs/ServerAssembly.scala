@@ -6,9 +6,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
 trait ServerAssembly {
-  implicit val executionContext: ExecutionContext
+  val executionContext: ExecutionContext
 
-  implicit val bus = EventBus()
+  implicit val bus = EventBus(executionContext)
 
   def withActor[A <: Command[_], B](actor:  Actor[A, B])(implicit tag: ClassTag[A]) = Actor(actor)(bus, tag)
 

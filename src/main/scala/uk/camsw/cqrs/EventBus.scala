@@ -41,10 +41,10 @@ trait EventHandler[A] {
   def onEvent: Event[_] => A
 }
 
-case class EventBus(var commandHandlers: Map[ClassTag[_], List[CommandHandler[_]]] = Map.empty.withDefaultValue(List.empty),
-                    var eventHandlers: List[EventHandler[_]] = List.empty)(implicit ec: ExecutionContext) {
+case class EventBus(_executionContext: ExecutionContext, var commandHandlers: Map[ClassTag[_], List[CommandHandler[_]]] = Map.empty.withDefaultValue(List.empty),
+                    var eventHandlers: List[EventHandler[_]] = List.empty) {
   type Subscription = () => Unit
-
+  implicit val executionContext = _executionContext
   def :+[A](h: CommandHandler[A])(implicit tag: ClassTag[A]): Subscription = {
     commandHandlers = commandHandlers + (tag -> (~commandHandlers.get(tag) :+ h))
     () => commandHandlers = commandHandlers + (tag -> (~commandHandlers.get(tag)).filterNot(_ == h))

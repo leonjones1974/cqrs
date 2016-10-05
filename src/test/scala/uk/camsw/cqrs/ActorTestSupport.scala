@@ -11,7 +11,7 @@ trait ActorTestSupport[A <: Command[_], B] extends BeforeAndAfter {
 
   val commandTag: ClassTag[A]
 
-  implicit val executionContext = ExecutionContext.fromExecutor(MoreExecutors.directExecutor())
+  val executionContext = ExecutionContext.fromExecutor(MoreExecutors.directExecutor())
   implicit var bus: EventBus = _
 
   def actorUnderTest(): Actor[A, B]
@@ -19,7 +19,7 @@ trait ActorTestSupport[A <: Command[_], B] extends BeforeAndAfter {
   var actorSystem: TestActorHolder[A, B] = _
 
   before {
-    bus = EventBus()
+    bus = EventBus(executionContext)
     actorSystem = TestActor(actorUnderTest())(bus, commandTag)
   }
 }
