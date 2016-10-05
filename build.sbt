@@ -9,6 +9,7 @@ libraryDependencies += "com.github.nscala-money" %% "nscala-money" % "0.11.0"
 libraryDependencies += "com.github.nscala-time" % "nscala-time_2.11" % "2.12.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.2" % "test"
 libraryDependencies += "org.pegdown" % "pegdown" % "1.0.2" % "test"
+libraryDependencies += "com.google.guava" % "guava" % "19.0"
 
 (testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/scalatest-report")
 
