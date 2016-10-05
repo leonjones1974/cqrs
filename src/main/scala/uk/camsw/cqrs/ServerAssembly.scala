@@ -2,13 +2,12 @@ package uk.camsw.cqrs
 
 import uk.camsw.cqrs.EventBus.EventList
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 trait ServerAssembly {
-  val executionContext: ExecutionContext
-
-  implicit val bus = EventBus(executionContext)
+  this: ServerAssembly =>
+  implicit val bus: EventBus
 
   def withActor[A <: Command[_], B](actor:  Actor[A, B])(implicit tag: ClassTag[A]) = Actor(actor)(bus, tag)
 
