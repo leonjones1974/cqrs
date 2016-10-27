@@ -4,10 +4,12 @@ import scala.reflect.ClassTag
 
 case class TestActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit bus: EventBus, tag: ClassTag[A]) {
   var raisedEvents = List.empty[Event[_]]
+  var raisedCommands = List.empty[Command[_]]
   val eventBus = bus
 
   bus :+ new CommandHandler[A] {
     override def handle = c => {
+      raisedCommands = raisedCommands :+ c
       val events = actor.ch(c)
       raisedEvents = raisedEvents ++ events
       events
