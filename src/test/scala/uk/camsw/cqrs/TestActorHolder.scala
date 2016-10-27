@@ -9,9 +9,7 @@ case class TestActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit 
 
   bus :+ new CommandHandler[A] {
     override def handle = c => {
-      raisedCommands = raisedCommands :+ c
       val events = actor.ch(c)
-      raisedEvents = raisedEvents ++ events
       events
     }
   }
@@ -25,11 +23,13 @@ case class TestActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit 
 
   def <<(c: A)(implicit tag: ClassTag[A]): TestActorHolder[A, B] = {
     bus << c
+    raisedCommands = raisedCommands :+ c
     this
   }
 
   def <<(ev: Event[_]): TestActorHolder[A, B] = {
     bus << ev
+    raisedEvents = raisedEvents :+ ev
     this
   }
 
