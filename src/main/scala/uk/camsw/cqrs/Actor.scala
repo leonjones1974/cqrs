@@ -1,26 +1,19 @@
 package uk.camsw.cqrs
 
-import uk.camsw.cqrs.EventBus.EventList
-
 import scala.reflect.ClassTag
 
-trait Actor[A <: Command[C], B, C] {
-  def ch(cmd: A)(implicit bus: EventBus): EventList
+trait Actor[A, B] {
+  def ch(cmd: A)(implicit bus: EventBus): List[Event[_]]
 
-  val eh: Event[_] => Actor[A, B, C]
-
-  type Data = C
-  type Handler = PartialFunction[A, EventList]
-  type ProducingHandler = EventBus => Handler
-
+  val eh: Event[_] => Actor[A, B]
 }
 
-case class ActorHolder[A <: Command[C], B, C](var actor: Actor[A, B, C])(implicit bus: EventBus, tag: ClassTag[A]) {
+case class ActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit bus: EventBus, tag: ClassTag[A]) {
   bus :+ new CommandHandler[A] {
     override def handle = actor.ch
   }
 
-  bus :+ new EventHandler[Actor[A, B, C]] {
+  bus :+ new EventHandler[Actor[A, B]] {
     override def onEvent = ev => {
       actor = actor.eh(ev)
       actor
@@ -29,7 +22,7 @@ case class ActorHolder[A <: Command[C], B, C](var actor: Actor[A, B, C])(implici
 }
 
 object Actor {
-  def apply[A <: Command[C], B, C](actor: Actor[A, B, C])(implicit bus: EventBus, tag: ClassTag[A]): ActorHolder[A, B, C] = {
+  def apply[A <: Command[_], B](actor: Actor[A, B])(implicit bus: EventBus, tag: ClassTag[A]): ActorHolder[A, B] = {
     ActorHolder(actor)
   }
 }

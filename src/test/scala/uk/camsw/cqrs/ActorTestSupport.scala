@@ -6,7 +6,7 @@ import org.scalatest.{BeforeAndAfter, Suite}
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
-trait ActorTestSupport[A <: Command[C], B, C] extends BeforeAndAfter {
+trait ActorTestSupport[A <: Command[_], B] extends BeforeAndAfter {
   self: Suite =>
 
   val commandTag: ClassTag[A]
@@ -14,9 +14,9 @@ trait ActorTestSupport[A <: Command[C], B, C] extends BeforeAndAfter {
   val executionContext = ExecutionContext.fromExecutor(MoreExecutors.directExecutor())
   implicit var bus: EventBus = _
 
-  def actorUnderTest(): Actor[A, B, C]
+  def actorUnderTest(): Actor[A, B]
 
-  var actorSystem: TestActorHolder[A, B, C] = _
+  var actorSystem: TestActorHolder[A, B] = _
 
   before {
     bus = EventBus(executionContext)
