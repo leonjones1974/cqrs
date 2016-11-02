@@ -8,7 +8,7 @@ trait ServerAssemblySupport extends BeforeAndAfter {
   self: Suite =>
 
   var server: ServerAssembly = _
-  var collector: TestActorHolder[NullCommand, NullActor] = _
+  var collector: TestActorHolder[NullCommand, NullActor, String] = _
 
   before {
     server = serverAssembly()
@@ -24,9 +24,9 @@ case class NullCommand() extends Command[String] {
   override val data: String = ""
 }
 
-case class NullActor() extends Actor[NullCommand, NullActor] {
+case class NullActor() extends Actor[NullCommand, NullActor, String] {
   override def ch(cmd: NullCommand)(implicit bus: EventBus): List[Event[_]] = List()
-  override val eh: (Event[_]) => Actor[NullCommand, NullActor] = ev => this
+  override val eh: (Event[_]) => Actor[NullCommand, NullActor, String] = ev => this
 }
 
 

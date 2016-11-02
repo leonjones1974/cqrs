@@ -2,7 +2,7 @@ package uk.camsw.cqrs
 
 import scala.reflect.ClassTag
 
-case class TestActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit bus: EventBus, tag: ClassTag[A]) {
+case class TestActorHolder[A <: Command[C], B, C](var actor: Actor[A, B, C])(implicit bus: EventBus, tag: ClassTag[A]) {
   var raisedEvents = List.empty[Event[_]]
   val eventBus = bus
 
@@ -14,19 +14,19 @@ case class TestActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit 
     }
   }
 
-  bus :+ new EventHandler[Actor[A, B]] {
+  bus :+ new EventHandler[Actor[A, B, C]] {
     override def onEvent = ev => {
       actor = actor.eh(ev)
       actor
     }
   }
 
-  def <<(c: A)(implicit tag: ClassTag[A]): TestActorHolder[A, B] = {
+  def <<(c: A)(implicit tag: ClassTag[A]): TestActorHolder[A, B, C] = {
     bus << c
     this
   }
 
-  def <<(ev: Event[_]): TestActorHolder[A, B] = {
+  def <<(ev: Event[_]): TestActorHolder[A, B, C] = {
     bus << ev
     this
   }
@@ -34,7 +34,7 @@ case class TestActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit 
 }
 
 object TestActor {
-  def apply[A <: Command[_], B](actor: Actor[A, B])(implicit bus: EventBus, tag: ClassTag[A]): TestActorHolder[A, B] = {
+  def apply[A <: Command[C], B, C](actor: Actor[A, B, C])(implicit bus: EventBus, tag: ClassTag[A]): TestActorHolder[A, B, C] = {
     TestActorHolder(actor)
   }
 }
