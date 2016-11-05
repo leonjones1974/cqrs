@@ -1,9 +1,11 @@
 package uk.camsw.cqrs
 
+import uk.camsw.cqrs.EventBus.EventList
+
 import scala.reflect.ClassTag
 
 trait Actor[A, B] {
-  def ch(cmd: A)(implicit bus: EventBus): List[Event[_]]
+  def ch(cmd: A)(implicit bus: EventBus): EventList
 
   val eh: Event[_] => Actor[A, B]
 }
