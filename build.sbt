@@ -10,6 +10,8 @@ libraryDependencies += "com.github.nscala-time" % "nscala-time_2.11" % "2.12.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.2" % "test"
 libraryDependencies += "org.pegdown" % "pegdown" % "1.0.2" % "test"
 libraryDependencies += "com.google.guava" % "guava" % "19.0"
+libraryDependencies += "org.slf4j" % "jul-to-slf4j" % "1.7.6"
+libraryDependencies += "org.clapper" %% "grizzled-slf4j" % "1.3.0"
 
 (testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/scalatest-report")
 
