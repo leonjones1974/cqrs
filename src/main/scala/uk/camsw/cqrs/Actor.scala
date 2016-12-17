@@ -11,15 +11,20 @@ trait Actor[A, B] {
 }
 
 case class ActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit bus: EventBus, tag: ClassTag[A]) {
-  bus :+ new CommandHandler[A] {
+  val cmdSubscription = bus :+ new CommandHandler[A] {
     override def handle = actor.ch
   }
 
-  bus :+ new EventHandler[Actor[A, B]] {
+  val evSubscription = bus :+ new EventHandler[Actor[A, B]] {
     override def onEvent = ev => {
       actor = actor.eh(ev)
       actor
     }
+  }
+
+  def dispose() {
+    cmdSubscription()
+    evSubscription()
   }
 }
 

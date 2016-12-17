@@ -9,9 +9,10 @@ import scala.concurrent.{Await, ExecutionContext}
 
 class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with ConcurrencyTestSupport {
 
-  implicit val executionContext = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
+
   import EventBusTest._
 
+  val busEc = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor(new NamedThreadFactory("bus")))
   var eventBus: EventBus = _
   var stringCommandHandler: TestCommandHandler[StringCommand] = _
   var intCommandHandler: TestCommandHandler[IntCommand] = _
@@ -19,7 +20,7 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
   var intEventHandler: IntEventHandler = _
 
   before {
-    eventBus = EventBus(executionContext)
+    eventBus = EventBus(busEc)
     stringCommandHandler = TestCommandHandler[StringCommand](List(ev1a, ev1b))
     intCommandHandler = TestCommandHandler[IntCommand](List(intEvent, ev2a))
     stringEventHandler = new StringEventHandler
@@ -58,7 +59,7 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
 
   describe("Event Bus -> Request/ Response") {
     it("should return first correlated event based on command id, upon ask") {
-      val eventBus = EventBus(executionContext)
+      val eventBus = EventBus(busEc)
       eventBus :+ TestCommandHandler[IntCommand](List(
         TestEvent(ev1a, UUID.randomUUID()),
         TestEvent(ev1b, intCommand.id))
@@ -67,7 +68,7 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
     }
 
     it("should drop subsequent matching commands, upon ask") {
-      val eventBus = EventBus(executionContext)
+      val eventBus = EventBus(busEc)
       eventBus :+ TestCommandHandler[IntCommand](List(
         TestEvent(ev1a, intCommand.id),
         TestEvent(ev1b, intCommand.id))
@@ -78,8 +79,8 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
 
   describe("Event Bus - Concurrency") {
 
-    it("should always execute commands on the same thread, regardless of publisher") {
-      val eventBus = EventBus(executionContext)
+    it("should always execute commands on the bus event loop, regardless of publisher") {
+      val eventBus = EventBus(busEc)
       val handler = TestCommandHandler[IntCommand](List.empty)
       eventBus :+ handler
       asyncAndWait(eventBus << intCommand, 3)
@@ -88,8 +89,8 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
       handler.receiveThreads.toSet.size shouldBe 1
     }
 
-    it("should execute ask commands on the same publish event loop") {
-      val eventBus = EventBus(executionContext)
+    it("should execute ask commands on the same bus event loop") {
+      val eventBus = EventBus(busEc)
       val handler = TestCommandHandler[IntCommand](List.empty)
       eventBus :+ handler
       asyncAndWait(eventBus << intCommand, 1)
@@ -99,8 +100,8 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
       handler.receiveThreads.toSet.size shouldBe 1
     }
 
-    it("should raise events on the publish thread") {
-      val eventBus = EventBus(executionContext)
+    it("should raise events on the bus event loop") {
+      val eventBus = EventBus(busEc)
       val handler = TestCommandHandler[IntCommand](List(intEvent))
       eventBus :+ handler
       eventBus :+ intEventHandler
@@ -109,8 +110,8 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
       (handler.receiveThreads ++ intEventHandler.receiveThreads).toSet.size shouldBe 1
     }
 
-    it("should raise events from an ask on the publish thread") {
-      val eventBus = EventBus(executionContext)
+    it("should raise events from an ask on the bus event loop thread") {
+      val eventBus = EventBus(busEc)
       val handler = TestCommandHandler[IntCommand](List(intEvent))
       eventBus :+ handler
       eventBus :+ intEventHandler

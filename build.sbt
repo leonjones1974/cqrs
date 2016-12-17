@@ -12,6 +12,7 @@ libraryDependencies += "org.pegdown" % "pegdown" % "1.0.2" % "test"
 libraryDependencies += "com.google.guava" % "guava" % "19.0"
 libraryDependencies += "org.slf4j" % "jul-to-slf4j" % "1.7.6"
 libraryDependencies += "org.clapper" %% "grizzled-slf4j" % "1.3.0"
+libraryDependencies +=  "ch.qos.logback" % "logback-classic" % "1.1.7" % "test"
 
 (testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/scalatest-report")
 

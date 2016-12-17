@@ -3,7 +3,7 @@ package uk.camsw.cqrs
 import java.util.UUID
 
 import grizzled.slf4j.Logging
-import uk.camsw.cqrs.EventBus.EventList
+import uk.camsw.cqrs.EventBus.{EventList, Subscription}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.reflect.ClassTag
@@ -44,7 +44,7 @@ trait EventHandler[A] {
 
 case class EventBus(_executionContext: ExecutionContext, var commandHandlers: Map[ClassTag[_], List[CommandHandler[_]]] = Map.empty.withDefaultValue(List.empty),
                     var eventHandlers: List[EventHandler[_]] = List.empty) extends Logging {
-  type Subscription = () => Unit
+
   implicit val executionContext = _executionContext
   def :+[A](h: CommandHandler[A])(implicit tag: ClassTag[A]): Subscription = {
     commandHandlers = commandHandlers + (tag -> (~commandHandlers.get(tag) :+ h))
@@ -62,10 +62,10 @@ case class EventBus(_executionContext: ExecutionContext, var commandHandlers: Ma
     (this << c).map(xs => xs.filter(ev => ev.id == c.id).head)
 
   def <<[A <: Command[_]](c: A)(implicit tag: ClassTag[A]): Future[EventList] = {
-    debug(s"Request Publish Command: [$c]")
+    debug(s"Publishing Command: [$c]")
     val p = Promise[EventList]
     Future {
-      debug(s"Publish Command: [$c]")
+      debug(s"Executing Command: [$c]")
       val handlers = ~commandHandlers.get(tag)
       val events = handlers.flatMap(x => x.asInstanceOf[CommandHandler[A]].handle(c))
       events.foreach(this << _)

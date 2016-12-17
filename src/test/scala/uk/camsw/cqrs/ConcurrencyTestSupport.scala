@@ -6,7 +6,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 
 trait ConcurrencyTestSupport {
   def asyncAndWait(action: => Future[_], times: Int = 3) {
-    implicit val publisherContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
+    implicit val publisherContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10, NamedThreadFactory("publisher")))
     val futures = for {
       n <- (1 to times).toList
       f = Future {
