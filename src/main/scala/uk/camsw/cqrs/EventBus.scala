@@ -68,7 +68,6 @@ case class EventBus(_executionContext: ExecutionContext, var commandHandlers: Ma
       debug(s"Executing Command: [$c]")
       val handlers = ~commandHandlers.get(tag)
       val events = handlers.flatMap(x => x.asInstanceOf[CommandHandler[A]].handle(c))
-      debug(s"Publishing events: [$events]")
       events.foreach(this << _)
       p.success(events)
     }
