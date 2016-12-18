@@ -77,7 +77,15 @@ case class EventBus(_executionContext: ExecutionContext, var commandHandlers: Ma
 
   def <<(ev: Event[_]): EventBus = {
     debug(s"Publish Event: [$ev]")
-    eventHandlers.foreach(_.onEvent(ev))
+    eventHandlers.foreach(eh => {
+      try {
+        eh.onEvent(ev)
+      } catch {
+        case e:Exception =>
+          error(s"Got exception: [$e]")
+          e.printStackTrace()
+      }
+    })
     this
   }
 }
