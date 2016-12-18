@@ -12,7 +12,7 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
 
   import EventBusTest._
 
-  val busEc = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor(new NamedThreadFactory("bus")))
+  val busEc = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
   var eventBus: EventBus = _
   var stringCommandHandler: TestCommandHandler[StringCommand] = _
   var intCommandHandler: TestCommandHandler[IntCommand] = _
