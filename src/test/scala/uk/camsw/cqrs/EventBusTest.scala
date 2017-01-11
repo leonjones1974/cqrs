@@ -64,7 +64,7 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
         TestEvent(ev1a, UUID.randomUUID()),
         TestEvent(ev1b, intCommand.id))
       )
-      Await.result(eventBus ? intCommand, 1 second).data shouldBe ev1b
+      Await.result(eventBus ? intCommand, 1 second).get.data shouldBe ev1b
     }
 
     it("should drop subsequent matching commands, upon ask") {
@@ -73,7 +73,7 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
         TestEvent(ev1a, intCommand.id),
         TestEvent(ev1b, intCommand.id))
       )
-      Await.result(eventBus ? intCommand, 1 second).data shouldBe ev1a
+      Await.result(eventBus ? intCommand, 1 second).get.data shouldBe ev1a
     }
   }
 

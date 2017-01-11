@@ -31,6 +31,8 @@ case class TestActorHolder[A <: Command[_], B](var actor: Actor[A, B])(implicit 
     this
   }
 
+  def ?[A <: Command[_]](c: A)(implicit tag: ClassTag[A]) = bus ? c
+
 }
 
 object TestActor {

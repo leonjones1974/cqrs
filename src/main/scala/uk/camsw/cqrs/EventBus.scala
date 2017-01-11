@@ -59,7 +59,7 @@ case class EventBus(_executionContext: ExecutionContext, var commandHandlers: Ma
   }
 
   def ?[A <: Command[_]](c: A)(implicit tag: ClassTag[A]) =
-    (this << c).map(xs => xs.filter(ev => ev.id == c.id).head)
+    (this << c).map(xs => xs.filter(_.id == c.id).headOption)
 
   def <<[A <: Command[_]](c: A)(implicit tag: ClassTag[A]): Future[EventList] = {
     debug(s"Publishing Command: [$c]")
