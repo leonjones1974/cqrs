@@ -35,7 +35,7 @@ object Event {
 }
 
 trait CommandHandler[A] {
-  def handle: A => List[Event[_]]
+  def handle: A => EventList
 }
 
 trait EventHandler[A] {
@@ -91,5 +91,5 @@ case class EventBus(_executionContext: ExecutionContext, var commandHandlers: Ma
 
 object EventBus {
   type Subscription = () => Unit
-  type EventList = List[Event[_]]
+  type EventList = Seq[Event[_]]
 }
