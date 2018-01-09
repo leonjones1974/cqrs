@@ -1,6 +1,5 @@
 package uk.camsw.cqrs.journal
 
-import java.io.ByteArrayInputStream
 import java.nio.file.{Files, Paths}
 
 import better.files.{File => ScalaFile}
@@ -12,24 +11,28 @@ import uk.camsw.cqrs.hospice.Models.HospiceEntryType.PoisonEvent
 import uk.camsw.cqrs.hospice.Models.InvalidData
 import uk.camsw.cqrs.journal.Commands.{JournalDomainCommand, RehydrateJournal, SuspendJournalling}
 import uk.camsw.cqrs.journal.Events.{JournalRehydrationFinished, JournalRehydrationStarted, JournallingSuspended}
-import uk.camsw.cqrs.journal.JournalDomain._
 import uk.camsw.cqrs.journal.Models.PersistentEvent
 import uk.camsw.cqrs.{Domain, EventBus}
 
-import scala.pickling._
-import scala.pickling.fastbinary._
-import scala.pickling.shareNothing._
 import scala.reflect.io.File
 import scala.util.{Failure, Try}
 
+trait Serialization {
+
+  def serialize(ev: PersistentEvent[_]): Array[Byte]
+  def deserialize(bytes: Array[Byte]): List[Try[PersistentEvent[_]]]
+
+}
+
 case class JournalDomain(journalPath: File,
+                         serialization: Serialization,
                          rehydrating: Boolean = false,
                          suspended: Boolean = false)(implicit bus: EventBus) extends Domain[JournalDomainCommand, JournalDomain]
   with Logging {
 
   handleCommand { case RehydrateJournal(file) if file.exists =>
     info(s"Rehydrating journal from [$file]")
-    val events = file.journalledEvents
+    val events = JournalDomain.journalledEvents(file, serialization)
     val valid = events.collect { case x if x.isSuccess => x.get }
     val invalid = events.collect { case x if x.isFailure => x }
 
@@ -68,41 +71,19 @@ case class JournalDomain(journalPath: File,
   }
 
   onEvent { case ev if ev.isInstanceOf[PersistentEvent[_]] && !rehydrating && !suspended =>
-    ScalaFile(journalPath.path).appendByteArray(serialize(ev.asInstanceOf[PersistentEvent[_]]))
+    ScalaFile(journalPath.path).appendByteArray(serialization.serialize(ev.asInstanceOf[PersistentEvent[_]]))
     this
   }
 }
 
 object JournalDomain {
 
-  val _keepImport = ShareNothing
-
   val decoder = new BASE64Decoder()
   val encoder = new BASE64Encoder()
 
-  def serialize(ev: PersistentEvent[_]): Array[Byte] = ev.pickle.value
-
-  def deserialize(entry: Array[Byte]): PersistentEvent[_] = BinaryPickle(entry).unpickle[PersistentEvent[_]]
-
-  implicit class ByteArrayPimp(xs: Array[Byte]) {
-    def journalledEvents = journalIterator.toList
-
-    def journalIterator= {
-      val inputStream = new ByteArrayInputStream(xs)
-      new Iterator[Try[PersistentEvent[_]]] {
-        val streamPickle = BinaryPickleStream(inputStream)
-        override def hasNext: Boolean = {
-          inputStream.available > 0
-        }
-        override def next(): Try[PersistentEvent[_]] = Try {streamPickle.unpickle[PersistentEvent[_]]}
-      }
-    }
-  }
-
-  implicit class FilePimp(file: File) {
-    def journalledEvents = journalIterator.toList
-
-    def journalIterator = Files.readAllBytes(Paths.get(file.path)).journalIterator
+  def journalledEvents(file: File, serialization: Serialization) : List[Try[PersistentEvent[_]]] = {
+    val bytes = Files.readAllBytes(Paths.get(file.path))
+    serialization.deserialize(bytes)
   }
 
 }

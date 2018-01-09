@@ -8,8 +8,10 @@ import uk.camsw.cqrs.journal.Commands.{JournalDomainCommand, RehydrateJournal, S
 import uk.camsw.cqrs.journal.Events.{JournalRehydrationFinished, JournalRehydrationStarted}
 import uk.camsw.cqrs.test.DomainTestSupport
 
+import scala.collection.mutable.ListBuffer
 import scala.reflect.classTag
 import scala.reflect.io.File
+import scala.util.{Success, Try}
 
 class JournalDomainTest extends FunSpec with Matchers
   with DomainTestSupport[JournalDomainCommand, JournalDomain]
@@ -28,7 +30,20 @@ class JournalDomainTest extends FunSpec with Matchers
     journalFile = File(s"/tmp/.edge2_unit/${UUID.randomUUID()}/journal/edge2.journal")
     val journalDir = journalFile.parent
     journalDir.createDirectory(force = true, failIfExists = false)
-    JournalDomain(journalFile)
+    var events = ListBuffer[Models.PersistentEvent[_]]()
+
+    JournalDomain(journalFile, new Serialization {
+
+
+      override def serialize(ev: Models.PersistentEvent[_]): Array[Byte] = {
+        events += ev
+        Array()
+      }
+
+      override def deserialize(bytes: Array[Byte]): List[Try[Models.PersistentEvent[_]]] = {
+        events.map(Success(_)).toList
+      }
+    })
   }
 
   describe("Journal Domain") {
