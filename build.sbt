@@ -1,21 +1,23 @@
 name := "cqrs"
 version := "1.1.0-SNAPSHOT"
-scalaVersion := "2.11.8"
+
 organization := "uk.camsw"
 
+crossScalaVersions := Seq("2.11.11")
 
-libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.4"
-libraryDependencies += "com.github.nscala-money" %% "nscala-money" % "0.11.0"
-libraryDependencies += "com.github.nscala-time" % "nscala-time_2.11" % "2.12.0"
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.2"
+
+libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.18"
+libraryDependencies += "com.github.nscala-money" %% "nscala-money" % "0.13.0"
+libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "2.18.0"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4"
 libraryDependencies += "org.pegdown" % "pegdown" % "1.0.2" % "test"
-libraryDependencies += "com.google.guava" % "guava" % "19.0"
+libraryDependencies += "com.google.guava" % "guava" % "23.0"
 libraryDependencies += "org.slf4j" % "jul-to-slf4j" % "1.7.6"
 libraryDependencies += "org.clapper" %% "grizzled-slf4j" % "1.3.0"
 libraryDependencies +=  "ch.qos.logback" % "logback-classic" % "1.1.7" % "test"
-libraryDependencies +=  "org.scala-lang" % "scala-pickling_2.11" % "0.9.1"
+libraryDependencies +=  "org.scala-lang" %% "scala-pickling" % "0.9.1"
 libraryDependencies +=  "com.github.pathikrit" %% "better-files" % "2.17.1"
-libraryDependencies +=  "org.scalamock" %% "scalamock-scalatest-support" % "3.1.4" % "test"
+libraryDependencies +=  "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
 
 
 (testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/scalatest-report")
