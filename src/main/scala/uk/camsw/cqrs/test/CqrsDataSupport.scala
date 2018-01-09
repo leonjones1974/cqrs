@@ -1,12 +1,16 @@
-package uk.camsw.cqrs
+package uk.camsw.cqrs.test
 
-import org.joda.time.LocalDate
+import org.joda.time.{Duration, Instant, LocalDate}
+import uk.camsw.cqrs.Command
 
 import scala.util.Random
 
-trait DataTestSupport {
+trait CqrsDataSupport {
 
   private val r = Random
+
+  def anInstant = Instant.now()
+  def aDuration = Duration.standardSeconds(r.nextInt())
 
   def aString(): String = (r.alphanumeric take 5).toList.mkString
 

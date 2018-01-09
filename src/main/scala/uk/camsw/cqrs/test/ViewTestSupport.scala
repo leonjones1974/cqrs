@@ -1,25 +1,31 @@
-package uk.camsw.cqrs
+package uk.camsw.cqrs.test
+
+import java.util.UUID
 
 import com.google.common.util.concurrent.MoreExecutors
 import org.scalatest.{BeforeAndAfter, Suite}
+import uk.camsw.cqrs._
 
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
-trait ActorTestSupport[A <: Command[_], B] extends BeforeAndAfter {
+trait ViewTestSupport[A <: QueryCommand, B] extends BeforeAndAfter {
   self: Suite =>
 
-  val commandTag: ClassTag[A]
+  def queryTag: ClassTag[A]
 
   val executionContext = ExecutionContext.fromExecutor(MoreExecutors.directExecutor())
   implicit var bus: EventBus = _
 
-  def actorUnderTest(): Actor[A, B]
+  def viewUnderTest(): View[A, B]
 
-  var actorSystem: TestActorHolder[A, B] = _
+  var view: TestViewHolder[A, B] = _
+
+  def anyId = UUID.randomUUID()
 
   before {
     bus = EventBus(executionContext)
-    actorSystem = TestActor(actorUnderTest())(bus, commandTag)
+    val test: View[A, B] = viewUnderTest()
+    view = TestView(test)(bus, queryTag)
   }
 }

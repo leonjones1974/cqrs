@@ -1,28 +1,29 @@
-package uk.camsw.cqrs
+package uk.camsw.cqrs.test
 
 import java.util.UUID
 
-class StringEventHandler extends EventHandler[StringEventHandler] {
+import uk.camsw.cqrs.{Event, EventHandler}
+
+//todo: Check we really need these now the event handler is simplified
+class StringEventHandler extends EventHandler {
   var received = List.empty[String]
 
-  override def onEvent: (Event[_]) => StringEventHandler = e => e.data match {
+  override def onEvent: (Event[_]) => Unit = e => e.data match {
     case s: String =>
       received = received :+ s
-      this
-    case _ => this
+    case _ => ()
   }
 }
 
-class IntEventHandler extends EventHandler[IntEventHandler] {
+class IntEventHandler extends EventHandler {
   var received = List.empty[Int]
   var receiveThreads = List.empty[Long]
 
-  override def onEvent: (Event[_]) => IntEventHandler = e => e.data match {
+  override def onEvent: (Event[_]) => Unit = e => e.data match {
     case n: Int =>
       received = received :+ n
       receiveThreads = receiveThreads :+ Thread.currentThread().getId
-      this
-    case s => this
+    case s => ()
   }
 }
 

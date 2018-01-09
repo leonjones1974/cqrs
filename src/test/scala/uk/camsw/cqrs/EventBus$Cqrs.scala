@@ -2,15 +2,20 @@ package uk.camsw.cqrs
 
 import java.util.UUID
 import java.util.concurrent.Executors
+
 import scala.concurrent.duration._
 import org.scalatest.{BeforeAndAfter, FunSpec, Matchers}
+import uk.camsw.cqrs.test._
 
 import scala.concurrent.{Await, ExecutionContext}
 
-class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with ConcurrencyTestSupport {
+class EventBus$Cqrs extends FunSpec with BeforeAndAfter with Matchers with ConcurrencyTestSupport {
+  implicit def asEvent[A]: A => Event[A] = e => new Event[A] {
+    val data = e
+    override val id: UUID = UUID.randomUUID()
+  }
 
-
-  import EventBusTest._
+  import EventBus$Cqrs._
 
   val busEc = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor(NamedThreadFactory("bus")))
   var eventBus: EventBus = _
@@ -122,9 +127,10 @@ class EventBusTest extends FunSpec with BeforeAndAfter with Matchers with Concur
   }
 }
 
-object EventBusTest extends DataTestSupport {
+object EventBus$Cqrs extends CqrsDataSupport {
   val stringCommand = StringCommand(aString())
   val ev1a, ev1b, ev2a = aString()
   val intCommand = IntCommand(anInt())
   val intEvent = anInt()
+
 }

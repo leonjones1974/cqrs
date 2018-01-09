@@ -1,6 +1,6 @@
 <configuration>
 
-    <logger name="uk.camsw" level="warn" />
+    <logger name="uk.camsw" level="WARN" />
     <logger name="org.openqa" level="OFF" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -9,7 +9,8 @@
         </encoder>
     </appender>
 
-    <root level="WARN">
+    <root level="debug">
         <appender-ref ref="STDOUT" />
+        <!--<appender-ref ref="STDERR" />-->
     </root>
 </configuration>

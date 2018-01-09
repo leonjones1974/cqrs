@@ -1,6 +1,9 @@
-package uk.camsw.cqrs
+package uk.camsw.cqrs.test
 
 import java.util.concurrent.Executors
+
+import uk.camsw.cqrs.NamedThreadFactory
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 
